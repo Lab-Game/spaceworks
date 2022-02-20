@@ -9,11 +9,9 @@
     <script type="text/javascript">
       const socket = io.connect('http://localhost:3000', { secure: true });
 
-      socket.on('response', function (msg) {
+      socket.emit('echo', "Hello, World!", function (msg) {
         console.log(msg);
       });
-
-      socket.emit('echo', "Hello, World!");
     </script>
   </body>
 </html>

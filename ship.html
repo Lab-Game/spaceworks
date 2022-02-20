@@ -3,8 +3,14 @@
   <head>
     <meta charset="utf-8">
     <title>Ship Test</title>
+    <link rel="stylesheet" href="computer.css">
   </head>
   <body onload="init()">
+    <script src="computer.js" charset="utf-8"></script>
+    <script type="text/javascript">
+      const computer = new Computer();
+      document.body.appendChild(computer.element);
+    </script>
     <canvas id="canvas" width="800" height="800" style="background:black;"></canvas>
       <script type="text/javascript">
 

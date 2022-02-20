@@ -1,0 +1,53 @@
+.computer {
+  width: 800px;
+  height: 800px;
+}
+
+.code {
+  display: inline-block;
+  width: 500px;
+  height: 800px;
+  background: black;
+  color: white;
+  font-family: Menlo, monospace;
+  font-size: 12px;
+  resize: none;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 4px;
+  margin: 0px;
+  border: none;
+  vertical-align: top;
+  outline: 1px solid white;
+}
+
+.terminal {
+  display: inline-block;
+  font-family: Menlo, monospace;
+  font-size: 12px;
+  width: 300px;
+  height: 800px;
+  background: black;
+  color: white;
+  box-sizing: border-box;
+  padding: 4px;
+  vertical-align: top;
+  outline: 1px solid white;
+}
+
+.input {
+  background: transparent;
+  color: white;
+  padding: 0px;
+  border: none;
+  outline: none;
+  font-family: Menlo, monospace;
+  font-size: 12px;
+  width: 292px;
+}
+
+.link {
+  text-decoration: underline;
+  cursor: default;
+  user-select: none;
+}

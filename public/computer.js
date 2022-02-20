@@ -71,6 +71,7 @@ class Computer extends EventTarget {
     this._code = "void print() {\n\tprint(\"init\");\n}\n\nvoid in(string input) {\n\tprint(input);\n}";
     this.inputs = [];
     this.outputs = [];
+    this.memory = null;
   }
 
   get code() {

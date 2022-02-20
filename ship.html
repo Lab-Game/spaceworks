@@ -8,8 +8,10 @@
   <body onload="init()">
     <script src="computer.js" charset="utf-8"></script>
     <script type="text/javascript">
+      const gui = new ComputerGUI();
       const computer = new Computer();
-      document.body.appendChild(computer.element);
+      computer.attach(gui);
+      document.body.appendChild(gui.element);
     </script>
     <canvas id="canvas" width="800" height="800" style="background:black;"></canvas>
       <script type="text/javascript">

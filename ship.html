@@ -8,26 +8,68 @@
     <canvas id="canvas" width="800" height="800" style="background:black;"></canvas>
       <script type="text/javascript">
 
-const velocity = 200;
+const velocity = 300;
 
 var x = 1000;
 var y = 100;
 var vx = 0;
 var vy = 0;
 
-var dude_width = 40;
+var dude_width = 60;
 var dude_height = 80;
 
-// List of (x, y, width, height) walls, which player may not enter.
-const wall_lines = [
+// List of (x0, y0, x1, y1) barriers.
+const barriers = [
   [ 800, 0, 1400, 0 ],
   [ 800, 0, 800, 600 ],
   [ 1400, 0, 1400, 600 ],
   [ 400, 600, 1000, 600 ],
   [ 1200, 600, 1800, 600 ],
+  [ 400, 600, 400, 2000 ],
+  [ 1800, 600, 1800, 2000 ],
+  [ 400, 2000, 1800, 2000 ],
+  [ 800, 800, 1000, 800 ],
+  [ 1200, 800, 1400, 800 ],
+  [ 800, 800, 800, 1000 ],
+  [ 400, 900, 800, 900],
+  [ 400, 1200, 800, 1200 ],
+  [ 800, 1200, 800, 1300 ],
+  [ 1400, 800, 1400, 1100 ],
+  [ 1400, 1100, 1800, 1100 ],
+  [ 400, 1500, 800, 1500 ],
+  [ 400, 1700, 500, 1700 ],
+  [ 700, 1700, 1000, 1700 ],
+  [ 800, 1700, 800, 2000 ],
+  [ 1200, 1700, 1400, 1700 ],
+  [ 1400, 1700, 1400, 2000 ],
+  [ 1400, 1500, 1800, 1500 ],
+  [ 1400, 1300, 1400, 1500 ],
 ];
 
-const walls = [];
+// Convert barriers into walls, which are rectangles rather than
+// lines.
+var walls = [];
+for (var i = 0; i < barriers.length; ++i) {
+  var b = barriers[i];
+  walls.push([
+    Math.min(b[0], b[2]) - 5,
+    Math.min(b[1], b[3]) - 5,
+    Math.max(b[0], b[2]) + 5,
+    Math.max(b[1], b[3]) + 5,
+  ]);
+}
+
+// Ship interior images
+var ship_images = [
+  [ "nav-corridor.png", 800, 600 ],
+];
+
+// Load images; don't worry about delays at startup
+for (var i = 0; i < ship_images.length; ++i) {
+  var img = new Image();
+  img.src = ship_images[i][0];
+  ship_images[i].push(img);
+}
 
 function drawShip() {
   var ctx = canvas.getContext("2d");
@@ -36,18 +78,18 @@ function drawShip() {
   ctx.save();
   ctx.translate(canvas.width / 2 - x, canvas.height / 2 - y);
 
+  // Draw images of the ship interior
+  for (var i = 0; i < ship_images.length; ++i) {
+    var img = ship_images[i];
+    ctx.drawImage(img[3], img[1], img[2]);
+  }
+
   // Draw walls
   ctx.fillStyle = "gray";
   for (var i = 0; i < walls.length; ++i) {
     var w = walls[i];
-
-    var xmin = Math.min(w[0], w[2]) - 5;
-    var xmax = Math.max(w[0], w[2]) + 5;
-    var ymin = Math.min(w[1], w[3]) - 5;
-    var ymax = Math.max(w[1], w[3]) + 5;
-
     ctx.beginPath();
-    ctx.fillRect(xmin, ymin, xmax - xmin, ymax - ymin);
+    ctx.fillRect(w[0], w[1], w[2] - w[0], w[3] - w[1]);
   }
 
   ctx.restore();
@@ -71,8 +113,29 @@ function animate() {
   var dt = Math.min(0.1, now - sim_time);
   sim_time = now;
 
-  x += vx * dt;
-  y += vy * dt;
+  // Compute candidate position for player.
+  var xp = x + vx * dt;
+  var yp = y + vy * dt;
+
+  // See if this causes an overlap with a wall.
+  var xmin = xp - dude_width / 2;
+  var xmax = xp + dude_width / 2;
+  var ymin = yp - dude_height / 2;
+  var ymax = yp + dude_height / 2;
+
+  var collision = false;
+  for (var i = 0; i < walls.length; ++i) {
+    var w = walls[i];
+    if (xmax > w[0] && xmin < w[2] && ymax > w[1] && ymin < w[3]) {
+      collision = true;
+      break;
+    }
+  }
+
+  if (!collision) {
+    x = xp;
+    y = yp;
+  }
 
   drawShip();
 

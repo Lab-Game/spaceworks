@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Ship Test</title>
+  </head>
+  <body onload="init()">
+    <canvas id="canvas" width="800" height="800" style="background:black;"></canvas>
+      <script type="text/javascript">
+
+const velocity = 200;
+
+var x = 1000;
+var y = 100;
+var vx = 0;
+var vy = 0;
+
+var dude_width = 40;
+var dude_height = 80;
+
+// List of (x, y, width, height) walls, which player may not enter.
+const wall_lines = [
+  [ 800, 0, 1400, 0 ],
+  [ 800, 0, 800, 600 ],
+  [ 1400, 0, 1400, 600 ],
+  [ 400, 600, 1000, 600 ],
+  [ 1200, 600, 1800, 600 ],
+];
+
+const walls = [];
+
+function drawShip() {
+  var ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.save();
+  ctx.translate(canvas.width / 2 - x, canvas.height / 2 - y);
+
+  // Draw walls
+  ctx.fillStyle = "gray";
+  for (var i = 0; i < walls.length; ++i) {
+    var w = walls[i];
+
+    var xmin = Math.min(w[0], w[2]) - 5;
+    var xmax = Math.max(w[0], w[2]) + 5;
+    var ymin = Math.min(w[1], w[3]) - 5;
+    var ymax = Math.max(w[1], w[3]) + 5;
+
+    ctx.beginPath();
+    ctx.fillRect(xmin, ymin, xmax - xmin, ymax - ymin);
+  }
+
+  ctx.restore();
+
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.fillRect(
+    canvas.width / 2 - dude_width / 2,
+    canvas.height / 2 - dude_height / 2,
+    dude_width,
+    dude_height);
+}
+
+var sim_time;
+
+function animate() {
+  if (sim_time === undefined) {
+    sim_time = Date.now() / 1000;
+  }
+  var now = Date.now() / 1000;
+  var dt = Math.min(0.1, now - sim_time);
+  sim_time = now;
+
+  x += vx * dt;
+  y += vy * dt;
+
+  drawShip();
+
+  window.requestAnimationFrame(animate);
+}
+
+var downKeys = {};
+
+function keyDown(e) {
+  if (e.key == "w" || e.key == "a" || e.key == "s" || e.key == "d") {
+    downKeys[e.key] = true;
+  }
+
+  setVelocity();
+}
+
+function keyUp(e) {
+  if (e.key == "w" || e.key == "a" || e.key == "s" || e.key == "d") {
+    downKeys[e.key] = false;
+  }
+
+  setVelocity();
+}
+
+function setVelocity() {
+  vx = 0;
+  vy = 0;
+
+  if (downKeys.w) { vy = - velocity; }
+  if (downKeys.a) { vx = - velocity; }
+  if (downKeys.s) { vy = velocity; }
+  if (downKeys.d) { vx = velocity; }
+}
+
+function init() {
+  document.addEventListener('keydown', keyDown);
+  document.addEventListener('keyup', keyUp);
+  window.requestAnimationFrame(animate);
+}
+
+    </script>
+  </body>
+</html>

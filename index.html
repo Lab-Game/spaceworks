@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="icon" href="/logo.png">
+    <title>Spaceworks</title>
+  </head>
+  <body>
+    <canvas id="ship_canvas" width="800" height="800" style="background:black;"></canvas>
+    <script type="module">
+      import { helloWorld } from './src/index.js';
+      helloWorld();
+
+      import { drawShip } from './src/ship.js';
+      drawShip(ship_canvas.getContext("2d"));
+    </script>
+  </body>
+</html>

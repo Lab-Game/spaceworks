@@ -104,9 +104,7 @@ class Computer extends EventTarget {
       this.run();
     });
 
-    setInterval(() => {
-      gui.setCode(this.code);
-    }, 1000);
+    gui.setCode(this.code);
   }
 
   print(text) {

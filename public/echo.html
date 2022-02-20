@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Echo Test</title>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js" integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      const socket = io.connect('http://localhost:3000', { secure: true });
+
+      socket.on('response', function (msg) {
+        console.log(msg);
+      });
+
+      socket.emit('echo', "Hello, World!");
+    </script>
+  </body>
+</html>

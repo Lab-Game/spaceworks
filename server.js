@@ -8,7 +8,7 @@ var server = app.listen(3000);
 var io = require('socket.io')(server);
 
 io.on('connection', function (socket) {
-  socket.on('echo', function (msg) {
-    socket.emit('echo', msg);
+  socket.on('echo', function (msg, callback) {
+    callback(msg);
   });
 });

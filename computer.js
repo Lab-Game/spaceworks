@@ -97,7 +97,7 @@ class Computer extends EventTarget {
     });
 
     this.addEventListener('update', event => {
-      gui.setCode(event.code);
+      gui.setCode(this.code);
     });
 
     gui.addEventListener('run', event => {

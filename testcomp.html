@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body onload="init()">
+    <script type="text/javascript">
+
+var test_prog = `
+# Comments begin with a #.
+# Each line consists of:
+#   An optional label consisting of [a-z]+ followed by a colon
+#   An instruction [a-z]+
+#   A comma-delimited set of arguments
+#     An argument may be a label, a number #<float>, a register r[0-9],
+#     or a port # p[0-9]
+#   An optional comment
+#
+# For example, here is a program that detects when the ship is
+# close to position (123.4, -567.8) and sends a signal when
+#
+
+begin:  read  p0,r0       # Read the ship's x position into resister 0
+        sub   r0,123.4,r0 # Subtract the desired x position
+        mul   r0,r0,r0    # Square register 0
+        read  p1,r1       # Read the ship's y position into register 1
+        sub   r1,-567.8,r1
+        mul   r1,r1,r1
+        add   r0,r1,r2    # Add the squared offsets
+        sqrt  r2,r2       # Compute distance to destination
+        bgr   r2,10000,far    # Go back to beginning if dist > 10000
+
+near:   write 1,p1        # Write a 1 to signal that we are close
+        jmp   begin
+
+far:    write 0,p1        # Write a 0 to signal that we are far
+        jmp   begin
+`;
+
+const AssemblyParam = {
+  "number" : 0,
+  "register" : 1,
+  "port" : 2,
+  "label" : 3,
+};
+
+const AssemblyInstruction = {
+  "read" : 0,
+  "write" : 1,
+  "add" : 2,
+  "sub" : 3,
+  "mul" : 4,
+  "div" : 5,
+  "jmp" : 6,
+  "bgr" : 7,
+  "bge" : 8,
+  "blt" : 9,
+  "ble" : 10,
+  "mov" : 11,
+  "sqrt" : 12,
+  "sin" : 13,
+  "cos" : 14,
+  "atan2" : 15,
+};
+
+function parseArg(arg) {
+  if (arg.length == 0) {
+    return null;
+  } else if (arg[0] == "r") {
+    if (arg.length != 2) {
+      return null;
+    }
+    var num = arg.charCodeAt(1) - 48;
+    if (num < 0 || num > 9) {
+      return null;
+    }
+    return [ AssemblyParam.register, num ];
+  } else if (arg[0] == "p") {
+    if (arg.length != 2) {
+      return null;
+    }
+    var num = arg.charCodeAt(1) - 48;
+    if (num < 0 || num > 9) {
+      return null;
+    }
+    return [ AssemblyParam.port, num ];
+  } else if (/[a-z]+/.test(arg)) {
+    return [ AssemblyParam.label, arg ];
+  } else {
+    var val = parseFloat(arg);
+    if (Number.isNaN(val)) {
+      return null;
+    } else {
+      return [ AssemblyParam.number, val ];
+    }
+  }
+}
+
+function parseLine(line) {
+  // Remove comments and trailing whitespace.
+  line = line.split("#")[0].trimEnd();
+  if (line.length == 0) {
+    return null;
+  }
+
+  // Split into label, instruction, and parameters
+  line = line.split(/\s+/);
+
+  if (line.length < 2) {
+    // Every nonempty line must contain an instruction.
+    return null;
+  } else if (line.length == 2) {
+    // Add a blank argument list, if there isn't one.
+    line.push("");
+  }
+
+  // If there is a label, remove the trailing colon.
+  if (line[0]) {
+    if (line[0].endsWith(":")) {
+      line[0] = line[0].slice(0, -1);
+    } else {
+      return null;
+    }
+  }
+
+  // Parse the argument list
+  line[2] = line[2].split(",").map(x => parseArg(x));
+
+  // If there is an invalid argument, then the whole line is invalid
+  if (line[2].some(x => (x === null))) {
+    return null;
+  }
+
+  return line;
+}
+
+// Map a text program to a "state", which includes the compiled program
+// and all internal state (registers, program counter, etc.)
+function compile(text) {
+  // Split the program into lines and parse each one.
+  var lines = text.split("\n").map(x => parseLine(x));
+
+  // Remove blank and defective lines
+  lines = lines.filter(x => (x !== null));
+
+  // Build a map from labels to line numbers
+  var labels = {};
+  for (var i = 0; i < lines.length; ++i) {
+    var line = lines[i];
+    if (line[0]) {
+      labels[line[0]] = i;
+    }
+  }
+
+  // Replace strings in label arguments with line numbers.
+  for (var i = 0; i < lines.length; ++i) {
+    var args = lines[i][2];
+    for (var j = 0; j < args.length; ++j) {
+      if (args[j][0] == AssemblyParam.label) {
+        var label = args[j][1];
+        if (label in labels) {
+          args[j][1] = labels[label];
+        } else {
+          // illegal label; compilation failure!
+          args[j][1] = 0;
+        }
+      }
+    }
+  }
+
+  return {
+    "program" : lines,
+    "pc" : 0,
+    "registers" : new Array(10).fill(0),
+    "ports" : new Array(10).fill(0),
+    "crashed" : false,
+  };
+}
+
+function execute(comp) {
+  if (comp.crashed) {
+    // computer has already crashed
+    return;
+  }
+
+  if (comp.pc < 0 || comp.pc >= comp.program.length) {
+    // if next instruction is out of bounds, crash
+    comp.crashed = true;
+    return;
+  }
+
+  var line = comp.program[comp.pc];
+  var instr = line[1];
+
+  // I should do more static argument type checking...
+  if (instr == AssemblyInstruction.read) {
+    
+  }
+
+  "read" : 0,
+  "write" : 1,
+  "add" : 2,
+  "sub" : 3,
+  "mul" : 4,
+  "div" : 5,
+  "jmp" : 6,
+  "bgr" : 7,
+  "bge" : 8,
+  "blt" : 9,
+  "ble" : 10,
+  "mov" : 11,
+  "sqrt" : 12,
+  "sin" : 13,
+  "cos" : 14,
+  "atan2" : 15,
+
+  comp.pc += 1;
+}
+
+function init() {
+  var computer = compile(test_prog);
+  for (var i = 0; i < 10; ++i) {
+    execute(computer;
+  }
+}
+
+    </script>
+  </body>
+</html>

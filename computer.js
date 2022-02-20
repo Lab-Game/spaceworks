@@ -40,9 +40,7 @@ class Computer {
     });
   }
 
-  exec(code, methods) {
-    const { print, read, write } = methods;
-
+  exec(code, { print, read, write }) {
     print("Hello, World!");
   }
 }

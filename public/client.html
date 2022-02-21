@@ -25,10 +25,6 @@ body {
     <canvas id="overhead" height="800" width="800"></canvas>
     <script type="text/javascript">
 
-// TEMP:
-const AMONGUS = new Image();
-AMONGUS.src = 'https://pioneeroptimist.com/wp-content/uploads/2021/03/among-us-6008615_1920-838x900.png';
-
 var CS = {
   "height" : 80,
   "width" : 60,
@@ -167,21 +163,13 @@ function animate() {
   ctx.restore();
 
   // Draw the player
-  /*ctx.fillStyle = "red";
+  ctx.fillStyle = "red";
   ctx.beginPath();
   ctx.fillRect(
       overhead.width / 2 - CS.width / 2,
       overhead.height / 2 - CS.height / 2,
       CS.width,
-      CS.height);*/
-
-  ctx.drawImage(
-    AMONGUS,
-    overhead.width / 2 - CS.width / 2,
-    overhead.height / 2 - CS.height / 2,
-    CS.width,
-    CS.height
-  )
+      CS.height);
 
   window.requestAnimationFrame(animate);
 }

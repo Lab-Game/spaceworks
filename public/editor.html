@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Program Editor</title>
+  </head>
+  <body onload="init()">
+
+  <div style="background:gray; width:800px; height:800px; position:relative;">
+    <textarea id="editor"
+        maxlength="2048" style="position:absolute; top:5px; left:5px; width:780px; height:550px; resize:none;
+        background:black; color:greenyellow;">
+    </textarea>
+    <div id="console" style="position:absolute; top:570px; left:5px; background:black; width:785px; height:180px;"></div>
+    <button style="position:absolute; top:760px; left:50px; font-size:24px;">Compile</button>
+    <button style="position:absolute; top:760px; left:300px; font-size:24px;">Upload</button>
+    <button style="position:absolute; top:760px; left:550px; font-size:24px;">Download</button>
+  </div>
+    <script type="text/javascript">
+
+
+var test_prog = `
+# Comments begin with a #.
+# Each line consists of:
+#   An optional label consisting of [a-z]+ followed by a colon
+#   An instruction [a-z]+
+#   A comma-delimited set of arguments
+#     An argument may be a label, a number #<float>, a register r[0-9],
+#     or a port # p[0-9]
+#   An optional comment
+#
+# For example, here is a program that detects when the ship is
+# close to position (123.4, -567.8) and sends a signal when
+#
+
+begin:  read  p0,r0       # Read the ship's x position into resister 0
+        sub   r0,123.4,r0 # Subtract the desired x position
+        mul   r0,r0,r0    # Square register 0
+        read  p1,r1       # Read the ship's y position into register 1
+        sub   r1,-567.8,r1
+        mul   r1,r1,r1
+        add   r0,r1,r2    # Add the squared offsets
+        sqrt  r2,r2       # Compute distance to destination
+        bgr   r2,10000,far    # Go back to beginning if dist > 10000
+
+near:   write 1,p1        # Write a 1 to signal that we are close
+        jmp   begin
+
+far:    write 0,p1        # Write a 0 to signal that we are far
+        jmp   begin
+`;
+
+function init() {
+  editor.value = test_prog;
+}
+
+    </script>
+  </body>
+</html>

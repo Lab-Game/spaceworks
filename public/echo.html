@@ -8,7 +8,7 @@
   </head>
   <body>
     <script type="text/javascript">
-      const socket = io.connect('http://localhost:3000/', { secure: true });
+      const socket = io({ secure: true });
 
       socket.emit('echo', "Hello, World!", msg => {
         console.log(msg);

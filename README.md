@@ -13,4 +13,4 @@ npm install
 # Start the server
 npm start
 ```
-Go to [localhost:3000/main.html](http://localhost:3000/main.html) to play.
+Go to [localhost:3000/client.html](http://localhost:3000/client.html) to play.

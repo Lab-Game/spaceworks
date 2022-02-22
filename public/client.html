@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Spaceworks</title>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js" integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H" crossorigin="anonymous"></script>
     <style media="screen">
 
 body {
@@ -21,21 +22,28 @@ body {
 
     </style>
   </head>
-  <body onload="init()">
+  <body>
     <canvas id="overhead" height="800" width="800"></canvas>
     <script type="text/javascript">
+
+const socket = io.connect('http://localhost:3000', { secure: true });
 
 var CS = {
   "height" : 80,
   "width" : 60,
-  "velocity" : 300,
+  "speed" : 300,
+  "run": 3,
   "lastUpdate" : undefined,
   "x" : Math.random() * 400 + 900,
   "y" : Math.random() * 700 + 900,
   "vx" : 0,
   "vy" : 0,
   "downKeys" : {},
+  "id": null,
+  "name": null
 };
+
+var players = {};
 
 // For convenience, the walls are initially specified as either
 // horizontal or vertical lines (x0, y0) and (x1, y1).  Then these
@@ -162,6 +170,37 @@ function animate() {
 
   ctx.restore();
 
+  // Draw other players
+  for (var id in players) {
+    if (players.hasOwnProperty(id) && id != CS.id) {
+      ctx.fillStyle = "blue";
+      ctx.fillRect(
+          overhead.width / 2 - CS.width / 2 + (players[id].position.x - CS.x),
+          overhead.height / 2 - CS.height / 2 + (players[id].position.y - CS.y),
+          CS.width,
+          CS.height);
+
+      ctx.fillStyle = "black";
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 3;
+
+      ctx.font = "16px Menlo, monospace";
+      ctx.textAlign = "center";
+
+      ctx.strokeText(
+        players[id].name,
+        overhead.width / 2 + (players[id].position.x - CS.x),
+        overhead.height / 2 - CS.height / 2 + (players[id].position.y - CS.y - 10)
+      );
+
+      ctx.fillText(
+        players[id].name,
+        overhead.width / 2 + (players[id].position.x - CS.x),
+        overhead.height / 2 - CS.height / 2 + (players[id].position.y - CS.y - 10)
+      );
+    }
+  }
+
   // Draw the player
   ctx.fillStyle = "red";
   ctx.beginPath();
@@ -171,21 +210,63 @@ function animate() {
       CS.width,
       CS.height);
 
+  ctx.fillStyle = "black";
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 3;
+
+  ctx.font = "16px Menlo, monospace";
+  ctx.textAlign = "center";
+
+  ctx.strokeText(
+    CS.name,
+    overhead.width / 2,
+    overhead.height / 2 - CS.height / 2 - 10
+  );
+
+  ctx.fillText(
+    CS.name,
+    overhead.width / 2,
+    overhead.height / 2 - CS.height / 2 - 10
+  );
+
+  update();
+
   window.requestAnimationFrame(animate);
 }
 
+function update() {
+  socket.emit('move', { x: CS.x, y: CS.y });
+
+  socket.emit('look', data => {
+    for (var id in data.players) {
+      if (data.players.hasOwnProperty(id)) {
+        if (!players[id]) {
+          players[id] = data.players[id];
+        }
+
+        players[id].position.x = data.players[id].position.x;
+        players[id].position.y = data.players[id].position.y;
+      }
+    }
+
+    for (var id in players) {
+      if (players.hasOwnProperty(id)) {
+        if (!data.players[id]) {
+          delete players[id];
+        }
+      }
+    }
+  });
+}
+
 function keyDown(e) {
-  if (e.key == "w" || e.key == "a" || e.key == "s" || e.key == "d") {
-    CS.downKeys[e.key] = true;
-  }
+  CS.downKeys[e.key.toLowerCase()] = true;
 
   setVelocity();
 }
 
 function keyUp(e) {
-  if (e.key == "w" || e.key == "a" || e.key == "s" || e.key == "d") {
-    CS.downKeys[e.key] = false;
-  }
+  CS.downKeys[e.key.toLowerCase()] = false;
 
   setVelocity();
 }
@@ -194,10 +275,10 @@ function setVelocity() {
   CS.vx = 0;
   CS.vy = 0;
 
-  if (CS.downKeys.w) { CS.vy = - CS.velocity; }
-  if (CS.downKeys.a) { CS.vx = - CS.velocity; }
-  if (CS.downKeys.s) { CS.vy = CS.velocity; }
-  if (CS.downKeys.d) { CS.vx = CS.velocity; }
+  if (CS.downKeys.w) { CS.vy = - CS.speed * (CS.downKeys.shift ? CS.run : 1); }
+  if (CS.downKeys.a) { CS.vx = - CS.speed * (CS.downKeys.shift ? CS.run : 1); }
+  if (CS.downKeys.s) { CS.vy = CS.speed * (CS.downKeys.shift ? CS.run : 1); }
+  if (CS.downKeys.d) { CS.vx = CS.speed * (CS.downKeys.shift ? CS.run : 1); }
 }
 
 function init() {
@@ -205,6 +286,26 @@ function init() {
   document.addEventListener('keyup', keyUp);
   window.requestAnimationFrame(animate);
 }
+
+socket.on('error', err => {
+  console.error("ServerError: " + err.type + ": " + err.text);
+});
+
+function connect(callback) {
+  CS.name = prompt("Name:") || "Anonymous";
+
+  socket.emit('join', CS.name, data => {
+    if (data.id != undefined) {
+      CS.id = data.id;
+
+      console.info("Joined game as " + data.id);
+
+      callback();
+    }
+  });
+}
+
+connect(init);
 
     </script>
   </body>
